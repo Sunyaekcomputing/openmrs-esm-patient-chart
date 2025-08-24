@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunk_openmrs_esm_home_app=globalThis.webpackChunk_openmrs_esm_home_app||[]).push([[795],{70795:e=>{e.exports={home:"საწყისი"}}}]);

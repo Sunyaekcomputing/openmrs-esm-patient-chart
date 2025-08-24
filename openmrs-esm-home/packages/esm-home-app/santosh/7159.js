@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunk_openmrs_esm_home_app=globalThis.webpackChunk_openmrs_esm_home_app||[]).push([[7159],{77159:e=>{e.exports={home:"হোম"}}}]);
