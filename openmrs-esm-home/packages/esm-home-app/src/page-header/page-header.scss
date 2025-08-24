@@ -1,0 +1,85 @@
+.addPatientBtn {
+  background: linear-gradient(145deg, #005d5d, #005d5d);
+  color: #fff;
+  border: none;
+  border-radius: 80px;
+  padding: 2rem 3.5rem;
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+  cursor: pointer;
+  margin-top: 100px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Removed fixed margin */
+  margin-left: auto;
+  margin-right: auto; 
+  display: block; // center horizontally by default
+
+  box-shadow: none;
+  text-shadow: none;
+
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: scale(1.07);
+    background: linear-gradient(145deg, #339E71, #339E71);
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    outline: 4px solid #a4cfa4;
+    outline-offset: 6px;
+  }
+
+  /* Responsive behavior */
+  @media (min-width: 1024px) {
+    margin-left: 750px; // keep your original desktop design
+    margin-right: 0;
+    display: inline-flex;
+  }
+
+  @media (max-width: 1023px) {
+    margin-left: auto;
+    margin-right: auto; // center button on tablets/mobiles
+    width: auto;
+  }
+
+  @media (max-width: 600px) {
+    width: 100%; // full width on small screens
+    font-size: 1.5rem;
+    padding: 1.2rem 2rem;
+  }
+}
+.patientList {
+  margin-top: 20px;
+  padding: 1rem;
+}
+
+.patientTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+.patientTable th,
+.patientTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.patientTable th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.patientTable tr:hover {
+  background-color: #e6f7ff;
+}
