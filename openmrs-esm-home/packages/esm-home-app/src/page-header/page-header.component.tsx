@@ -1,9 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { navigate, openmrsFetch, restBaseUrl, fhirBaseUrl } from "@openmrs/esm-framework";
 
-/**
- * --- Types ---
- */
 type User = {
   uuid: string;
   username: string;
@@ -28,15 +25,12 @@ export interface PatientList {
   members: SearchedPatient[];
 }
 
-/**
- * --- HomePageHeader Component ---
- */
 export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: string }) {
   const [user, setUser] = useState<User | null>(null);
   const [patientLists, setPatientLists] = useState<PatientList[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const baseUrl = (window.getOpenmrsSpaBase?.() ?? "/openmrs/spa").replace(/\/$/, "");
 
-  // --- Fetch current user session ---
   useEffect(() => {
     openmrsFetch<{ user: User }>(`${restBaseUrl}/session`)
       .then((res) => setUser(res.data.user))
@@ -47,7 +41,6 @@ export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: str
     return user?.roles?.map((r) => r.display.toLowerCase()) || [];
   }, [user]);
 
-  // --- Fetch recently registered patients from FHIR ---
   useEffect(() => {
     const fetchRecentPatients = async () => {
       try {
@@ -56,7 +49,7 @@ export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: str
         const since = sevenDaysAgo.toISOString();
 
         const res = await openmrsFetch<{ entry?: { resource: SearchedPatient }[] }>(
-          `${fhirBaseUrl}/Patient?_lastUpdated=ge${since}&_sort=-_lastUpdated&_count=20`
+          `${fhirBaseUrl}/Patient?_lastUpdated=ge${since}&_sort=-_lastUpdated&_count=50`
         );
 
         const patients =
@@ -66,7 +59,7 @@ export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: str
               ...patient,
               artId:
                 patient.identifier?.find((id) =>
-                  id.type?.text?.toLowerCase().includes("सहभागीको एआरटि आईडी")
+                  id.type?.text?.toLowerCase().includes("आफ्नो एआरटि  आईडी लेख्नुहोस्")
                 )?.value || "N/A",
               registeredDate: patient.meta?.lastUpdated || "N/A",
             };
@@ -84,7 +77,6 @@ export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: str
       }
     };
 
-    // Only fetch if NOT self registration
     if (userRoles.length && !userRoles.includes("self registration")) {
       fetchRecentPatients();
     }
@@ -96,18 +88,24 @@ export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: str
 
   const openChart = useCallback(
     (patient: SearchedPatient) => {
-      if (patient.id) {
-        navigate({ to: `${baseUrl}/patient/${patient.id}/chart` });
-      }
+      if (patient.id) navigate({ to: `${baseUrl}/patient/${patient.id}/chart` });
     },
     [baseUrl]
   );
 
-  // --- UI ---
+  // 🔍 Filter patients locally as user types
+  const displayedPatients = useMemo(() => {
+    const allPatients = patientLists[0]?.members || [];
+    if (!searchTerm.trim()) return allPatients;
+
+    return allPatients.filter((p) =>
+      p.artId?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, patientLists]);
+
   return (
     <>
       {userRoles.includes("self registration") ? (
-        // ✅ Only show दर्ता गर्नुहोस् button if role = self registration
         <div style={{ display: "flex", justifyContent: "center", marginTop: "100px" }}>
           <button
             style={{
@@ -131,70 +129,76 @@ export default function HomePageHeader({ dashboardTitle }: { dashboardTitle: str
           </button>
         </div>
       ) : (
-        // ✅ Otherwise, show recently registered patients
         <div style={{ marginTop: "80px", marginLeft: "40px", fontFamily: "Noto Sans Devanagari, sans-serif" }}>
           <h3 style={{ color: "#339E71", fontSize: "2.4rem", marginBottom: "25px" }}>
             🧾 हालै दर्ता भएका सहभागीहरू
           </h3>
 
-          {patientLists.map((list) => (
-            <div key={list.id} style={{ marginBottom: "40px" }}>
-              {list.members.length === 0 ? (
-                <p style={{ fontStyle: "italic" }}>कुनै नयाँ सहभागी दर्ता भएका छैनन्</p>
-              ) : (
-                <table
-                  style={{
-                    width: "70%",
-                    borderCollapse: "collapse",
-                    fontSize: "1.1rem",
-                    boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <thead>
-                    <tr style={{ backgroundColor: "#005d5d", color: "#fff" }}>
-                      <th
-                        style={{
-                          padding: "14px 18px",
-                          textAlign: "left",
-                          fontSize: "18px",
-                          fontWeight: "600",
-                        }}
-                      >
-                        सहभागीको एआरटि आईडी
-                      </th>
-                      <th style={{ padding: "14px 18px", textAlign: "left" }}>दर्ता मिति</th>
-                    </tr>
-                  </thead>
+          <table
+            style={{
+              width: "70%",
+              borderCollapse: "collapse",
+              fontSize: "1.1rem",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+              borderRadius: "12px",
+              overflow: "hidden",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#005d5d", color: "#fff" }}>
+                <th style={{ padding: "14px 18px", textAlign: "left", width: "55%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    सहभागीको एआरटि आईडी
+                    <input
+                      type="text"
+                      placeholder="खोज्नुहोस्..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      style={{
+                        padding: "6px 10px",
+                        fontSize: "0.9rem",
+                        borderRadius: "6px",
+                        border: "1px solid #ccc",
+                        width: "180px",
+                      }}
+                    />
+                  </div>
+                </th>
+                <th style={{ padding: "14px 18px", textAlign: "left" }}>दर्ता मिति</th>
+              </tr>
+            </thead>
 
-                  <tbody>
-                    {list.members.map((p, idx) => (
-                      <tr
-                        key={p.id}
-                        onClick={() => openChart(p)}
-                        style={{
-                          cursor: "pointer",
-                          backgroundColor: idx % 2 === 0 ? "#f9fdf9" : "#ffffff",
-                          transition: "all 0.2s ease",
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7f0")}
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.backgroundColor =
-                            idx % 2 === 0 ? "#f9fdf9" : "#ffffff")
-                        }
-                      >
-                        <td style={{ padding: "12px 18px" }}>{p.artId}</td>
-                        <td style={{ padding: "12px 18px" }}>
-                          {p.registeredDate ? new Date(p.registeredDate).toLocaleString() : "N/A"}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <tbody>
+              {displayedPatients.length === 0 ? (
+                <tr>
+                  <td colSpan={2} style={{ padding: "12px 18px", fontStyle: "italic" }}>
+                    कुनै सहभागी भेटिएन
+                  </td>
+                </tr>
+              ) : (
+                displayedPatients.map((p, idx) => (
+                  <tr
+                    key={p.id}
+                    onClick={() => openChart(p)}
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor: idx % 2 === 0 ? "#f9fdf9" : "#ffffff",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e6f7f0")}
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = idx % 2 === 0 ? "#f9fdf9" : "#ffffff")
+                    }
+                  >
+                    <td style={{ padding: "12px 18px" }}>{p.artId}</td>
+                    <td style={{ padding: "12px 18px" }}>
+                      {p.registeredDate ? new Date(p.registeredDate).toLocaleString() : "N/A"}
+                    </td>
+                  </tr>
+                ))
               )}
-            </div>
-          ))}
+            </tbody>
+          </table>
         </div>
       )}
     </>
