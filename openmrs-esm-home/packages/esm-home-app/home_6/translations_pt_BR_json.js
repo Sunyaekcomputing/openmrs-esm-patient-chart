@@ -1,0 +1,14 @@
+"use strict";
+(globalThis["webpackChunk_openmrs_esm_home_app"] = globalThis["webpackChunk_openmrs_esm_home_app"] || []).push([["translations_pt_BR_json"],{
+
+/***/ "./translations/pt_BR.json":
+/*!*********************************!*\
+  !*** ./translations/pt_BR.json ***!
+  \*********************************/
+/***/ ((module) => {
+
+module.exports = /*#__PURE__*/JSON.parse('{"home":"Página Inicial"}');
+
+/***/ })
+
+}]);

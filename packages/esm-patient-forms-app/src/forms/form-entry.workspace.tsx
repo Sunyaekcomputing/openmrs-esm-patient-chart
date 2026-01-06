@@ -49,16 +49,16 @@ const FormEntry: React.FC<FormEntryComponentProps> = ({
         typeof mutateForm === 'function' && mutateForm();
         closeWorkspace();
       },
-      closeWorkspaceWithSavedChanges: () => {
-        typeof mutateForm === 'function' && mutateForm();
-        // Update current visit data for critical components
-        mutateCurrentVisit();
+     closeWorkspaceWithSavedChanges: () => {
+  typeof mutateForm === 'function' && mutateForm();
+  mutateCurrentVisit();
 
-        // Also invalidate visit history and encounter tables since form submission may create/update encounters
-        invalidateVisitAndEncounterData(globalMutate, patientUuid);
+  if (typeof invalidateVisitAndEncounterData === 'function') {
+    invalidateVisitAndEncounterData(globalMutate, patientUuid);
+  }
 
-        closeWorkspaceWithSavedChanges();
-      },
+  closeWorkspaceWithSavedChanges();
+},
       promptBeforeClosing,
       additionalProps,
       clinicalFormsWorkspaceName,

@@ -59,14 +59,16 @@ jest.mock('@openmrs/esm-patient-common-lib', () => {
 test('should display clinical form action button on tablet view', () => {
   mockUseLayoutType.mockReturnValue('tablet');
 
-  render(<ClinicalFormActionButton />);
+ render(<ClinicalFormActionButton  />);
+
   expect(screen.getByRole('button', { name: /Clinical forms/i })).toBeInTheDocument();
 });
 
 test('should display clinical form action button on desktop view', () => {
   mockUseLayoutType.mockReturnValue('small-desktop');
 
-  render(<ClinicalFormActionButton />);
+render(<ClinicalFormActionButton  />);
+
   const clinicalActionButton = screen.getByRole('button', { name: /Form/i });
   expect(clinicalActionButton).toBeInTheDocument();
 });
